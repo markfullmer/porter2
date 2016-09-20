@@ -10,7 +10,7 @@ error_reporting(E_ALL | E_STRICT);
 
 // Time the operation.
 $start = microtime(TRUE);
-require_once 'Porter2Stem.php';
+require_once 'Porter2.php';
 $dataset = (array) parse_ini_file('Datasets/full.ini', TRUE);
 $count = 0;
 $true = 0;
