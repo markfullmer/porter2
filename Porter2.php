@@ -12,32 +12,69 @@
  */
 class porter2 {
 
-  private $word = '';
+  /**
+   * The word being stemmed.
+   *
+   * @var string
+   */
+  protected $word;
 
   /**
-   * The R1 of the word: http://snowball.tartarus.org/texts/r1r2.html.
+   * The R1 of the word.
+   *
+   * @var int
+   *
+   * @see http://snowball.tartarus.org/texts/r1r2.html.
    */
-  private $r1;
+  protected $r1;
 
   /**
-   * The R2 of the word: http://snowball.tartarus.org/texts/r1r2.html.
+   * The R2 of the word.
+   *
+   * @var int
+   *
+   * @see http://snowball.tartarus.org/texts/r1r2.html.
    */
-  private $r2;
+  protected $r2;
 
   /**
-   * Allow a key => value array of exceptions to be passed to exceptions().
+   * List of exceptions to be used.
+   *
+   * @var string[]
    */
-  public $custom_exceptions = array();
+  protected $exceptions = array();
 
   /**
-   * Prepare the word form for processing.
+   * Constructs a SearchApiPorter2 object.
+   *
+   * @param string $word
+   *   The word to stem.
+   * @param string[] $custom_exceptions
+   *   (optional) A custom list of exceptions.
    */
-  public function __construct($word) {
+  public function __construct($word, $custom_exceptions = array()) {
     $this->word = $word;
-    // Remove initial ', if present.
-    if ($this->length() > 2 && substr($this->word, 0, 1) === "'") {
-      $this->word = substr($this->word, 1, $this->length() - 1);
-    }
+    $this->exceptions = $custom_exceptions + array(
+      'skis' => 'ski',
+      'skies' => 'sky',
+      'dying' => 'die',
+      'lying' => 'lie',
+      'tying' => 'tie',
+      'idly' => 'idl',
+      'gently' => 'gentl',
+      'ugly' => 'ugli',
+      'early' => 'earli',
+      'only' => 'onli',
+      'singly' => 'singl',
+      'sky' => 'sky',
+      'news' => 'news',
+      'howe' => 'howe',
+      'atlas' => 'atlas',
+      'cosmos' => 'cosmos',
+      'bias' => 'bias',
+      'andes' => 'andes',
+    );
+
     // Set initial y, or y after a vowel, to Y.
     $inc = 0;
     while ($inc <= $this->length()) {
@@ -53,7 +90,10 @@ class porter2 {
   }
 
   /**
-   * The only public-facing method. Call ->stem(WORD) to return stemmed word.
+   * Computes the stem of the word.
+   *
+   * @return string
+   *   The word's stem.
    */
   public function stem() {
     // Ignore exceptions & words that are two letters or less.
@@ -74,46 +114,27 @@ class porter2 {
   }
 
   /**
-   * Is the word in a given list of exceptions? If so, replace and end process.
+   * Determines whether the word is contained in our list of exceptions.
+   *
+   * If so, the $word property is changed to the stem listed in the exceptions.
+   *
+   * @return bool
+   *   TRUE if the word was an exception, FALSE otherwise.
    */
-  private function exceptions() {
-    $checks = array(
-      'skis' => 'ski',
-      'skies' => 'sky',
-      'dying' => 'die',
-      'lying' => 'lie',
-      'tying' => 'tie',
-      'idly' => 'idl',
-      'gently' => 'gentl',
-      'ugly' => 'ugli',
-      'early' => 'earli',
-      'only' => 'onli',
-      'singly' => 'singl',
-      'sky' => 'sky',
-      'news' => 'news',
-      'howe' => 'howe',
-      'atlas' => 'atlas',
-      'cosmos' => 'cosmos',
-      'bias' => 'bias',
-      'andes' => 'andes',
-    );
-    $checks = array_merge($checks, $this->custom_exceptions);
-    if (in_array($this->word, array_keys($checks))) {
-      foreach ($checks as $find => $replace) {
-        if ($find === $this->word) {
-          $this->word = $replace;
-          break;
-        }
-      }
+  protected function exceptions() {
+    if (isset($this->exceptions[$this->word])) {
+      $this->word = $this->exceptions[$this->word];
       return TRUE;
     }
     return FALSE;
   }
 
   /**
-   * Step 0: Search for the longest among the "s" suffixes & remove.
+   * Searches for the longest among the "s" suffixes and removes it.
+   *
+   * Implements step 0 of the Porter2 algorithm.
    */
-  private function step0() {
+  protected function step0() {
     $found = FALSE;
     $checks = array("'s'", "'s", "'");
     foreach ($checks as $check) {
@@ -125,9 +146,11 @@ class porter2 {
   }
 
   /**
-   * Step 1a: Search for the longest among the following suffixes.
+   * Handles various suffixes, of which the longest is replaced.
+   *
+   * Implements step 1a of the Porter2 algorithm.
    */
-  private function step1a() {
+  protected function step1a() {
     $found = FALSE;
     if ($this->hasEnding('sses')) {
       $this->removeEnding('sses');
@@ -137,12 +160,12 @@ class porter2 {
     $checks = array('ied', 'ies');
     foreach ($checks as $check) {
       if (!$found && $this->hasEnding($check)) {
-        if ($this->length() > 4) {
-          $this->removeEnding($check);
+        $length = $this->length();
+        $this->removeEnding($check);
+        if ($length > 4) {
           $this->addEnding('i');
         }
         else {
-          $this->removeEnding($check);
           $this->addEnding('ie');
         }
         $found = TRUE;
@@ -158,11 +181,20 @@ class porter2 {
   }
 
   /**
-   * Step 1b.
+   * Handles various suffixes, of which the longest is replaced.
+   *
+   * Implements step 1b of the Porter2 algorithm.
    */
-  private function step1b() {
+  protected function step1b() {
     $exceptions = array(
-      'inning', 'outing', 'canning', 'herring', 'earring', 'proceed', 'exceed', 'succeed',
+      'inning',
+      'outing',
+      'canning',
+      'herring',
+      'earring',
+      'proceed',
+      'exceed',
+      'succeed',
     );
     if (in_array($this->word, $exceptions)) {
       return;
@@ -181,7 +213,7 @@ class porter2 {
     $second_endings = array('at', 'bl', 'iz');
     foreach ($checks as $check) {
       // If the ending is present and the previous part contains a vowel.
-      if ($this->hasEnding($check) && $this->containsVowel(substr($this->word, 0, $this->length() - strlen($check)))) {
+      if ($this->hasEnding($check) && $this->containsVowel(substr($this->word, 0, -strlen($check)))) {
         $this->removeEnding($check);
         foreach ($second_endings as $ending) {
           if ($this->hasEnding($ending)) {
@@ -201,20 +233,21 @@ class porter2 {
   }
 
   /**
-   * Step 1c. Replace suffix y or Y with i if after non-vowel not @ word begin.
+   * Replaces suffix y or Y with i if after non-vowel not @ word begin.
+   *
+   * Implements step 1c of the Porter2 algorithm.
    */
-  private function step1c() {
+  protected function step1c() {
     if (($this->hasEnding('y') || $this->hasEnding('Y')) && $this->length() > 2 && !($this->isVowel($this->length() - 2))) {
       $this->removeEnding('y');
-      $this->removeEnding('Y');
       $this->addEnding('i');
     }
   }
 
   /**
-   * Step 2.
+   * Implements step 2 of the Porter2 algorithm.
    */
-  private function step2() {
+  protected function step2() {
     $checks = array(
       "ization" => "ize",
       "iveness" => "ive",
@@ -250,16 +283,16 @@ class porter2 {
       }
     }
     if ($this->hasEnding('li')) {
-      if ($this->validli(substr($this->word, -3, 1)) && $this->length() > 4) {
+      if ($this->length() > 4 && $this->validLi($this->charAt(-3))) {
         $this->removeEnding('li');
       }
     }
   }
 
   /**
-   * Step 3.
+   * Implements step 3 of the Porter2 algorithm.
    */
-  private function step3() {
+  protected function step3() {
     $checks = array(
       'ational' => 'ate',
       'tional' => 'tion',
@@ -287,9 +320,9 @@ class porter2 {
   }
 
   /**
-   * Step 4.
+   * Implements step 4 of the Porter2 algorithm.
    */
-  private function step4() {
+  protected function step4() {
     $checks = array(
       'ement',
       'ment',
@@ -313,13 +346,10 @@ class porter2 {
     foreach ($checks as $check) {
       // Among the suffixes, if found and in R2, delete.
       if ($this->hasEnding($check)) {
-        if ($check == 'ion') {
-          if ($this->inR2('ion') && in_array(substr($this->word, -4, 1), array('s', 't'))) {
-            $this->removeEnding('ion');
+        if ($this->inR2($check)) {
+          if ($check !== 'ion' || in_array($this->charAt(-4), array('s', 't'))) {
+            $this->removeEnding($check);
           }
-        }
-        elseif ($this->inR2($check)) {
-          $this->removeEnding($check);
         }
         return;
       }
@@ -327,9 +357,9 @@ class porter2 {
   }
 
   /**
-   * Step 5.
+   * Implements step 5 of the Porter2 algorithm.
    */
-  private function step5() {
+  protected function step5() {
     if ($this->hasEnding('e')) {
       // Delete if in R2, or in R1 and not preceded by a short syllable.
       if ($this->inR2('e') || ($this->inR1('e') && !$this->isShortSyllable($this->length() - 3))) {
@@ -339,21 +369,24 @@ class porter2 {
     }
     if ($this->hasEnding('l')) {
       // Delete if in R2 and preceded by l.
-      if ($this->inR2('l') && substr($this->word, -2, 1) == 'l') {
+      if ($this->inR2('l') && $this->charAt(-2) == 'l') {
         $this->removeEnding('l');
       }
     }
   }
 
   /**
-   * Remove doubles from the following list.
+   * Removes certain double consonants from the word's end.
+   *
+   * @return bool
+   *   TRUE if a match was found and removed, FALSE otherwise.
    */
-  private function removeDoubles() {
+  protected function removeDoubles() {
     $found = FALSE;
     $doubles = array('bb', 'dd', 'ff', 'gg', 'mm', 'nn', 'pp', 'rr', 'tt');
     foreach ($doubles as $double) {
       if (substr($this->word, -2) == $double) {
-        $this->word = substr($this->word, 0, $this->length() - 2) . substr($double, 1);
+        $this->word = substr($this->word, 0, -1);
         $found = TRUE;
         break;
       }
@@ -362,68 +395,115 @@ class porter2 {
   }
 
   /**
-   * Is the letter indicated by the string position a vowel?
+   * Checks whether a character is a vowel.
+   *
+   * @param int $position
+   *   The character's position.
+   * @param string|null $word
+   *   (optional) The word in which to check. Defaults to $this->word.
+   * @param string[] $additional
+   *   (optional) Additional characters that should count as vowels.
+   *
+   * @return bool
+   *   TRUE if the character is a vowel, FALSE otherwise.
    */
-  private function isVowel($position, $word = NULL, $additional = array()) {
-    if ($word == NULL) {
+  protected function isVowel($position, $word = NULL, $additional = array()) {
+    if ($word === NULL) {
       $word = $this->word;
     }
     $vowels = array_merge(array('a', 'e', 'i', 'o', 'u', 'y'), $additional);
-    if (in_array(substr($word, $position, 1), $vowels)) {
-      return TRUE;
-    }
-    return FALSE;
+    return in_array($this->charAt($position, $word), $vowels);
   }
 
   /**
-   * From a given ending $position in a word, does it end -vowel-consonant?
+   * Retrieves the character at the given position.
    *
-   * If this position is not provided, assume end of word, and
-   * additionally check that the last letter is not w, x, or Y.
+   * @param int $position
+   *   The 0-based index of the character. If a negative number is given, the
+   *   position is counted from the end of the string.
+   * @param string|null $word
+   *   (optional) The word from which to retrieve the character. Defaults to
+   *   $this->word.
+   *
+   * @return string
+   *   The character at the given position, or an empty string if the given
+   *   position was illegal.
    */
-  private function isShortSyllable($position = NULL) {
+  protected function charAt($position, $word = NULL) {
+    if ($word === NULL) {
+      $word = $this->word;
+    }
+    $length = strlen($word);
+    if (abs($position) >= $length) {
+      return '';
+    }
+    if ($position < 0) {
+      $position += $length;
+    }
+    return $word[$position];
+  }
+
+  /**
+   * Determines whether the word ends in a "vowel-consonant" suffix.
+   *
+   * Unless the word is only two characters long, it also checks that the
+   * third-last character is neither "w", "x" nor "Y".
+   *
+   * @param int|null $position
+   *   (optional) If given, do not check the end of the word, but the character
+   *   at the given position, and the next one.
+   *
+   * @return bool
+   *   TRUE if the word has the described suffix, FALSE otherwise.
+   */
+  protected function isShortSyllable($position = NULL) {
     if ($position === NULL) {
       $position = $this->length() - 2;
     }
     // A vowel at the beginning of the word followed by a non-vowel.
     if ($position === 0) {
-      if ($this->isVowel(0) && !$this->isVowel(1)) {
-        return TRUE;
-      }
+      return $this->isVowel(0) && !$this->isVowel(1);
     }
-    else {
-      // Vowel followed by non-vowel other than w, x, Y & preceded by non-vowel.
-      $additional = array('w', 'x', 'Y');
-      return (!$this->isVowel($position - 1) && $this->isVowel($position) && !$this->isVowel($position + 1, NULL, $additional));
-    }
+    // Vowel followed by non-vowel other than w, x, Y and preceded by
+    // non-vowel.
+    $additional = array('w', 'x', 'Y');
+    return !$this->isVowel($position - 1) && $this->isVowel($position) && !$this->isVowel($position + 1, NULL, $additional);
   }
 
   /**
+   * Determines whether the word is short.
+   *
    * A word is called short if it ends in a short syllable and if R1 is null.
+   *
+   * @return bool
+   *   TRUE if the word is short, FALSE otherwise.
    */
-  private function isShort() {
+  protected function isShort() {
     return $this->isShortSyllable() && $this->r1 == $this->length();
   }
 
   /**
+   * Determines the start of a certain "R" region.
+   *
    * R is a region after the first non-vowel following a vowel, or end of word.
    *
    * @param int $type
-   *    1 or 2. If 2, then calculate the R after the R1.
+   *   (optional) 1 or 2. If 2, then calculate the R after the R1.
+   *
+   * @return int
+   *   The R position.
    */
-  private function R($type = 1) {
+  protected function R($type = 1) {
     $inc = 1;
     if ($type === 2) {
       $inc = $this->r1;
     }
-    else {
-      if ($this->length() > 5 && (strcmp('gener', substr($this->word, 0, 5)) === 0)) {
+    elseif ($this->length() > 5) {
+      $prefix_5 = substr($this->word, 0, 5);
+      if ($prefix_5 === 'gener' || $prefix_5 === 'arsen') {
         return 5;
       }
-      if ($this->length() > 5 && (strcmp('arsen', substr($this->word, 0, 5)) === 0)) {
-        return 5;
-      }
-      if ($this->length() > 6 && (strcmp('commun', substr($this->word, 0, 6)) === 0)) {
+      if ($this->length() > 6 && substr($this->word, 0, 6) === 'commun') {
         return 6;
       }
     }
@@ -446,32 +526,53 @@ class porter2 {
   }
 
   /**
-   * Is the given string in R1?
+   * Checks whether the given string is contained in R1.
+   *
+   * @param string $string
+   *   The string.
+   *
+   * @return bool
+   *   TRUE if the string is in R1, FALSE otherwise.
    */
-  private function inR1($string = '') {
+  protected function inR1($string) {
     $r1 = substr($this->word, $this->r1);
     return strpos($r1, $string) !== FALSE;
   }
 
   /**
-   * Is the given string in R2?
+   * Checks whether the given string is contained in R2.
+   *
+   * @param string $string
+   *   The string.
+   *
+   * @return bool
+   *   TRUE if the string is in R2, FALSE otherwise.
    */
-  private function inR2($string = '') {
+  protected function inR2($string) {
     $r2 = substr($this->word, $this->r2);
     return strpos($r2, $string) !== FALSE;
   }
 
   /**
-   * The string length of the current word.
+   * Determines the string length of the current word.
+   *
+   * @return int
+   *   The string length of the current word.
    */
-  private function length() {
+  protected function length() {
     return strlen($this->word);
   }
 
   /**
-   * Does the word end with a given string?
+   * Checks whether the word ends with the given string.
+   *
+   * @param string $string
+   *   The string.
+   *
+   * @return bool
+   *   TRUE if the word ends with the given string, FALSE otherwise.
    */
-  private function hasEnding($string) {
+  protected function hasEnding($string) {
     $length = strlen($string);
     if ($length > $this->length()) {
       return FALSE;
@@ -480,26 +581,37 @@ class porter2 {
   }
 
   /**
-   * Append a given string to the current word state.
+   * Appends a given string to the current word.
+   *
+   * @param string $string
+   *   The ending to append.
    */
-  private function addEnding($string = '') {
+  protected function addEnding($string) {
     $this->word = $this->word . $string;
   }
 
   /**
-   * Remove a given string from the current word state.
+   * Removes a given string from the end of the current word.
+   *
+   * Does not check whether the ending is actually there.
+   *
+   * @param string $string
+   *   The ending to remove.
    */
-  private function removeEnding($string = '') {
-    $length = strlen($string);
-    if (substr($this->word, -1 * $length, $length) == $string) {
-      $this->word = substr($this->word, 0, $this->length() - strlen($string));
-    }
+  protected function removeEnding($string) {
+    $this->word = substr($this->word, 0, -strlen($string));
   }
 
   /**
-   * Does a given string contain a vowel?
+   * Checks whether the given string contains a vowel.
+   *
+   * @param string $string
+   *   The string to check.
+   *
+   * @return bool
+   *   TRUE if the string contains a vowel, FALSE otherwise.
    */
-  private function containsVowel($string) {
+  protected function containsVowel($string) {
     $inc = 0;
     $return = FALSE;
     while ($inc < strlen($string)) {
@@ -513,11 +625,26 @@ class porter2 {
   }
 
   /**
-   * Is a given string in the array of valid -li prefixes?
+   * Checks whether the given string is a valid -li prefix.
+   *
+   * @param string $string
+   *   The string to check.
+   *
+   * @return bool
+   *   TRUE if the given string is a valid -li prefix, FALSE otherwise.
    */
-  private function validli($string = '') {
+  protected function validLi($string) {
     return in_array($string, array(
-      'c', 'd', 'e', 'g', 'h', 'k', 'm', 'n', 'r', 't',
+      'c',
+      'd',
+      'e',
+      'g',
+      'h',
+      'k',
+      'm',
+      'n',
+      'r',
+      't',
     ));
   }
 
