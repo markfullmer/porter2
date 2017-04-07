@@ -1,0 +1,12 @@
+{
+    "name": "porter2/porter2",
+    "description": "Stem words using the English Porter 2 algorithm",
+    "type": "library",
+    "license": "GPLv2",
+    "autoload": {
+        "psr-4": { "markfullmer\\porterstemmer\\": ["src/", "test/"] }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4"
+    }
+}
