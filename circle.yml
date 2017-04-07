@@ -6,4 +6,5 @@ machine:
 
 test:
   override:
+    - phpunit
     - php --version
