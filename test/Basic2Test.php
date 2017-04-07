@@ -2,10 +2,12 @@
 
 namespace markfullmer\porterstemmer;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Test words are stemmed correctly.
  */
-class Basic2Test extends \PHPUnit_Framework_TestCase {
+class Basic2Test extends TestCase {
 
   /**
    * Provides data.
