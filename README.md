@@ -15,8 +15,22 @@ creating a commonality between those words.
 Martin Porter's English (Porter 2) Algorithm improves on the original Porter
 stemmer as described [here](http://snowball.tartarus.org/algorithms/english/stemmer.html).
 
-## Usage
-To be added.
+## Basic Usage
+The included `/demo/index.php` file contains a conversion form demonstration.
+
+Make your code aware of the `Porter2` class via your favorite method (e.g.,
+`use` or `require`)
+
+Then pass a string of text into the class:
+```php
+$text = Porter2::stem('consistently');
+echo $text; // consist
+
+$text = Porter2::stem('consisting');
+echo $text; // consist
+
+$text = Porter2::stem('consistency');
+echo $text; // consist
 ```
 
 ## Stemmer Resources
