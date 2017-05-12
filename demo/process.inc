@@ -7,7 +7,7 @@
 
 require '../vendor/autoload.php';
 
-use markfullmer\porterstemmer\Porter2;
+use markfullmer\porter2\Porter2;
 
 /**
  * Regular expression defining a word boundary for Porter Stemmer.

@@ -1,6 +1,6 @@
 <?php
 
-namespace markfullmer\porterstemmer;
+namespace markfullmer\porter2;
 
 use PHPUnit\Framework\TestCase;
 

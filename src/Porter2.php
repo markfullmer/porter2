@@ -1,6 +1,6 @@
 <?php
 
-namespace markfullmer\porterstemmer;
+namespace markfullmer\porter2;
 
 /**
  * PHP Implementation of the Porter2 Stemming Algorithm.
