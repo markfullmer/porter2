@@ -1,4 +1,4 @@
-# Porter 2 Stemmer for PHP (test)
+# Porter 2 Stemmer for PHP
 
 [![Circle CI](https://circleci.com/gh/markfullmer/porter2.svg?style=shield)](https://circleci.com/gh/markfullmer/porter2)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/markfullmer/porter2/master/LICENSE)
