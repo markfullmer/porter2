@@ -31,7 +31,7 @@ if (php_sapi_name() != "cli") {
     // The request is to HTTP. Trigger the redirect.
     $redirect = TRUE;
   }
-  if ($redirect && strpos($url, 'localhost') !== FALSE) {
+  if ($redirect && strpos($url, 'localhost') === FALSE) {
     // Send all traffic to HTTPS.
     header('HTTP/1.0 301 Moved Permanently');
     header('Location: ' . 'https://' . $url . $_SERVER['REQUEST_URI'] . 'demo');
