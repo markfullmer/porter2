@@ -35,6 +35,11 @@ echo '<!DOCTYPE html>
 
 echo '
 <div class="container">
+  <div class="row">
+    <div class="six twelve columns">
+      <span>Porter 2 (English) Stemming Algorithm</span><span class="u-pull-right">Source code: <a href="https://github.com/markfullmer/porter2">https://github.com/markfullmer/porter2</a></span><hr />
+    </div>
+  </div>
   <form action="//' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] . '" method="POST">
     <div class="row">
       <div class="six columns">
