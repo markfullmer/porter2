@@ -40,3 +40,7 @@ echo $text; // consist
 ## Tests
 A verification list of 29,000 words and their expected stems can be run (after
 ```composer install``` via ```phpunit```).
+
+## Contributions (Paras Lehana)
+
+* *External file support for protected words:* Now you can add protected words to this stemmer. Protected words won't be stemmed. For example, I have added 'training' as protected word so that it doesn't get stemmed to 'train'. Add words in newline in file src/protwords.txt (more instructions in protwords.txt file).

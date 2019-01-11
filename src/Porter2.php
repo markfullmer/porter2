@@ -161,6 +161,14 @@ class Porter2 {
       'exceed',
       'succeed',
     );
+
+    $line_arr = file(__DIR__.'/protwords.txt',FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
+    
+    foreach ($line_arr as $line){
+      if(substr(trim($line),0,1)=='#') continue;
+      array_push($exceptions,(string)$line);
+    }
+
     if (in_array($word, $exceptions)) {
       return $word;
     }
