@@ -1,0 +1,10 @@
+# Please add protected words here in new line.
+# Lines starting with hash would be ignored so you comments using this.
+# I usually add current date before adding a protected word.
+# Protected words: The words you'll be putting here would be ignored by the stemmer. That is, for a keyword like 'training' put here, it would be returned as 'training' by the stemmer and not 'train'.
+# Blank lines would also be ignored. 
+# Demo: Uncomment 'training' that I have added on Jan 10, 2019 to protect it. Likewise, you can add your words in each line.
+
+# Added on Jan 10, 2018
+
+training
