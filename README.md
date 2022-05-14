@@ -34,6 +34,17 @@ $text = Porter2::stem('consistency');
 echo $text; // consist
 ```
 
+## Using with Composer package manager
+To use this library with Composer, simply run the following command:
+```
+composer require markfullmer/porter2
+```
+Then in Your PHP application, simply use the `Porter2` static class with `stem` function:
+```
+use markfullmer\Porter2\Porter2;
+var_dump(Porter2::stem('consistently'));
+```
+
 ## Stemmer Resources
 * [Step definition for the Porter 2 stemmer](http://snowball.tartarus.org/algorithms/english/stemmer.html)
 
